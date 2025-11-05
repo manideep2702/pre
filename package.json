@@ -33,6 +33,7 @@
     "next": "15.5.3",
     "nodemailer": "^6.10.1",
     "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^3.11.174",
     "python": "^0.0.4",
     "react": "19.1.0",
     "react-day-picker": "^9.4.0",

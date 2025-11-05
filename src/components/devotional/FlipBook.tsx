@@ -7,29 +7,17 @@ type FlipBookProps = {
   src: string; // PDF url
 };
 
-declare global {
-  interface Window {
-    pdfjsLib?: any;
-  }
-}
-
+// Use npm package instead of CDN script to avoid webpack runtime conflicts
 async function ensurePdfJs() {
   if (typeof window === "undefined") return null;
-  if (window.pdfjsLib) return window.pdfjsLib;
-  await new Promise<void>((resolve, reject) => {
-    const script = document.createElement("script");
-    script.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
-    script.async = true;
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error("Failed to load pdf.js"));
-    document.head.appendChild(script);
-  });
-  const pdfjsLib = (window as any).pdfjsLib;
-  if (pdfjsLib) {
-    pdfjsLib.GlobalWorkerOptions.workerSrc =
+  const mod = await import("pdfjs-dist/legacy/build/pdf");
+  // Set worker source to the packaged worker via CDN as a fallback; or consumers
+  // can serve it locally by copying from node_modules/pdfjs-dist/build/pdf.worker.min.js
+  try {
+    (mod as any).GlobalWorkerOptions.workerSrc =
       "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-  }
-  return pdfjsLib;
+  } catch {}
+  return mod as any;
 }
 
 export default function FlipBook({ src }: FlipBookProps) {
@@ -50,7 +38,7 @@ export default function FlipBook({ src }: FlipBookProps) {
       try {
         const pdfjs = await ensurePdfJs();
         if (!pdfjs) return;
-        const task = pdfjs.getDocument(src);
+        const task = (pdfjs as any).getDocument(src);
         const pdf = await task.promise;
         if (cancelled) return;
         pdfRef.current = pdf;
