@@ -162,7 +162,7 @@ export default function NavUserDropdown() {
         supabase = mod.getSupabaseBrowserClient();
         supabaseRef.current = supabase;
       }
-      const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || window.location.origin).replace(/\/$/, "");
+      const siteUrl = ((typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_SITE_URL || "")) as string).replace(/\/$/, "");
       const redirectTo = `${siteUrl}/auth/callback`;
       const { error } = await supabase.auth.linkIdentity({ provider: "google", options: { redirectTo } as any });
       if (error) {
